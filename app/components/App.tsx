@@ -24,6 +24,7 @@ import { Messages } from "./screens/Messages";
 
 export function App() {
   const screen = useUnex((s) => s.screen);
+  const myPhone = useUnex((s) => s.myPhone);
   const [hydrated, setHydrated] = useState(false);
   const [inbound, setInbound] = useState<{
     from: string;
@@ -48,7 +49,17 @@ export function App() {
     );
   }
 
+  // Invite deep-link: require WA login first; keep query until Accept/Decline
   if (inbound) {
+    const needsLogin = !myPhone || myPhone.length < 9;
+    if (needsLogin) {
+      return (
+        <PhoneShell>
+          <Toast />
+          <Login />
+        </PhoneShell>
+      );
+    }
     return (
       <PhoneShell>
         <Toast />

@@ -42,9 +42,20 @@ export function Requests() {
   };
 
   useEffect(() => {
-    void load();
-    const id = window.setInterval(() => void load(), 4000);
-    return () => window.clearInterval(id);
+    const safeLoad = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void load();
+    };
+    safeLoad();
+    const id = window.setInterval(safeLoad, 8000);
+    const onVis = () => {
+      if (!document.hidden) void load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myPhone]);
 

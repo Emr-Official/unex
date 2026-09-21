@@ -23,7 +23,7 @@ export function Safety() {
     endPair,
     submitReport,
     reportSubmitted,
-    setScreen,
+    setScreen, goHome,
   } = useUnex();
   const name = partnerName || "them";
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -94,7 +94,7 @@ export function Safety() {
         </p>
       </Card>
 
-      <Btn variant="subtle" onClick={() => setScreen("home")}>
+      <Btn variant="subtle" onClick={() => goHome()}>
         back
       </Btn>
     </div>

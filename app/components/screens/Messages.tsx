@@ -138,7 +138,7 @@ export function Messages() {
           onClick={() => void sendLivePin()}
           className="w-full flex items-center justify-center gap-2 rounded-full border border-[rgba(249,168,212,0.35)] bg-[rgba(249,168,212,0.1)] px-3 py-2 text-[0.75rem] font-semibold text-[#f9a8d4] active:scale-[0.98]"
         >
-          📍 Come get me
+          📍 Come get me · pin signal
         </button>
         <Btn variant="ghost" onClick={() => setScreen("home")}>
           back to home

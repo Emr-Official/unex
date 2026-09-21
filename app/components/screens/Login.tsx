@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Btn, Card, Eyebrow, SectionTitle, Signal, Sub } from "../ui";
 import { useUnex } from "@/lib/store";
+import { LOCALES } from "@/lib/constants";
+import { t } from "@/lib/i18n";
 import { normalizePhone, upsertUser } from "@/lib/accountSync";
 
 export function Login() {
@@ -14,6 +16,9 @@ export function Login() {
     setScreen,
     pairState,
     showToast,
+    locale,
+    setLocale,
+    goHome,
   } = useUnex();
   const [name, setName] = useState(myName || "");
   const [phone, setPhone] = useState(myPhone ? `+${myPhone}` : "");
@@ -33,9 +38,7 @@ export function Login() {
       showToast("saved locally — directory sync delayed");
     }
     setBusy(false);
-    if (pairState === "paired") setScreen("home");
-    else if (pairState === "pending") setScreen("waiting");
-    else setScreen("invite");
+    goHome();
   };
 
   return (
@@ -73,11 +76,31 @@ export function Login() {
         </div>
       </Card>
       <div className="mt-auto flex flex-col gap-2">
+        <p className="text-[0.65rem] text-center text-[#6b6478] uppercase tracking-wide">
+          {t(locale, "lang.picker")}
+        </p>
+        <div className="flex flex-wrap gap-1.5 justify-center mb-1">
+          {LOCALES.map((L) => (
+            <button
+              key={L.code}
+              type="button"
+              onClick={() => setLocale(L.code)}
+              className={`px-2.5 py-1 rounded-full text-[0.68rem] font-medium border ${
+                locale === L.code
+                  ? "bg-[rgba(196,181,253,0.2)] border-[rgba(196,181,253,0.5)] text-[#c4b5fd]"
+                  : "bg-[#1e1b26] border-[rgba(196,181,253,0.14)] text-[#9b93a8]"
+              }`}
+            >
+              {L.label}
+              {!L.live ? " · soon" : ""}
+            </button>
+          ))}
+        </div>
         <Btn
           onClick={() => void go()}
           disabled={!name.trim() || normalizePhone(phone).length < 9 || busy}
         >
-          {busy ? "saving…" : "enter unex"}
+          {busy ? "saving…" : t(locale, "login.enter")}
         </Btn>
         <Btn variant="ghost" onClick={() => setScreen("splash")}>
           back

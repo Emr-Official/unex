@@ -45,11 +45,20 @@ export function Waiting() {
         // keep waiting; network blips are fine
       }
     };
-    tick();
-    const id = window.setInterval(tick, 2500);
+    const safeTick = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void tick();
+    };
+    safeTick();
+    const id = window.setInterval(safeTick, 4000);
+    const onVis = () => {
+      if (!document.hidden) void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       alive = false;
       window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [inviteCode, markPairedFromInvite, cancelInvite, showToast]);
 

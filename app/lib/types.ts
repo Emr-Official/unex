@@ -35,6 +35,8 @@ export type PairState = "none" | "pending" | "paired" | "ended";
 
 export type PairRole = "host" | "guest";
 
+export type LocaleCode = "en" | "es" | "fr" | "sw" | "pt";
+
 export interface TapMessage {
   id: string;
   label: string;
@@ -85,6 +87,8 @@ export interface UnexState {
   partnerStatus: HeartbreakStatus;
   partnerMood: Mood;
   tapsLeft: number;
+  /** YYYY-MM-DD of last tapsLeft reset */
+  tapsDayKey: string;
   muted: boolean;
   archived: boolean;
   needSpaceHold: boolean;
@@ -106,6 +110,8 @@ export interface UnexState {
   seenTapIds: string[];
   isPremium: boolean;
   myPhone: string;
+  /** UI language (EN live; others stub) */
+  locale: LocaleCode;
   /** Premium multi-pair list (also holds the free single pair for switching later). */
   connections: ConnectionEntry[];
   activeConnectionId: string | null;

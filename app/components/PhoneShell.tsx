@@ -49,13 +49,7 @@ export function PhoneShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => {
-              const s = useUnex.getState();
-              if (s.pairState === "paired") {
-                if (s.isPremium) s.showConnectionsList();
-                else setScreen("home");
-              } else {
-                setScreen("splash");
-              }
+              useUnex.getState().goHome();
             }}
             className="font-semibold tracking-tight bg-gradient-to-r from-[#c4b5fd] to-[#f9a8d4] bg-clip-text text-transparent text-[0.95rem]"
           >
@@ -134,6 +128,13 @@ export function PhoneShell({ children }: { children: ReactNode }) {
                       <button
                         type="button"
                         className="w-full text-left px-3.5 py-2.5 text-[0.82rem] text-[#f3f0f8] hover:bg-[rgba(196,181,253,0.1)]"
+                        onClick={() => go("clearUnread")}
+                      >
+                        Clear unread
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3.5 py-2.5 text-[0.82rem] text-[#f3f0f8] hover:bg-[rgba(196,181,253,0.1)]"
                         onClick={() => go("safety")}
                       >
                         Safety
@@ -146,6 +147,25 @@ export function PhoneShell({ children }: { children: ReactNode }) {
                     onClick={() => go("requests")}
                   >
                     Requests inbox
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3.5 py-2.5 text-[0.82rem] text-[#f3f0f8] hover:bg-[rgba(196,181,253,0.1)]"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      const { locale, setLocale, showToast } = useUnex.getState();
+                      const order = ["en", "es", "fr", "sw", "pt"] as const;
+                      const idx = Math.max(0, order.indexOf(locale as (typeof order)[number]));
+                      const next = order[(idx + 1) % order.length];
+                      setLocale(next);
+                      showToast(
+                        next === "en"
+                          ? "language · English"
+                          : `language · ${next} (coming soon)`
+                      );
+                    }}
+                  >
+                    Language
                   </button>
                   <button
                     type="button"

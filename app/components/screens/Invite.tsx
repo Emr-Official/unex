@@ -97,9 +97,9 @@ export function Invite() {
         invite them in
       </h2>
       <Sub>
-        Blocked everywhere else? Send a direct request to their WhatsApp number
-        if they already joined unex — or share an invite link. Both still say
-        yes here.
+        If you can&apos;t reach them on other apps, send an in-app request to
+        their WhatsApp number only if they already joined unex — or share an
+        invite link. Both still say yes here.
       </Sub>
 
       <div className="flex gap-1.5">

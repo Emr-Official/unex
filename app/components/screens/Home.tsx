@@ -315,14 +315,15 @@ function PairHome() {
       <Card>
         <SectionTitle>live pin</SectionTitle>
         <p className="text-[0.72rem] text-[#9b93a8] mt-1 mb-2">
-          Map pin for right now — not one shared spot. Expires in 30 min.
+          Live pin signal for right now — expires in 30 min. Map view lands in a later build.
         </p>
         <button
           type="button"
+          disabled={partnerStatus === "Need space" || partnerMood === "Need space"}
           onClick={() => {
             void sendLivePin();
           }}
-          className="w-full flex items-center gap-3 rounded-2xl border border-[rgba(249,168,212,0.35)] bg-gradient-to-br from-[rgba(167,139,250,0.2)] to-[rgba(249,168,212,0.15)] px-3.5 py-3 text-left active:scale-[0.99] transition"
+          className="w-full flex items-center gap-3 rounded-2xl border border-[rgba(249,168,212,0.35)] bg-gradient-to-br from-[rgba(167,139,250,0.2)] to-[rgba(249,168,212,0.15)] px-3.5 py-3 text-left active:scale-[0.99] transition disabled:opacity-40"
         >
           <span
             aria-hidden
@@ -335,7 +336,7 @@ function PairHome() {
               Come get me
             </span>
             <span className="block text-[0.7rem] text-[#9b93a8]">
-              Send live location pin · they see the map
+              Send live pin signal · expires in 30 min
             </span>
           </span>
         </button>

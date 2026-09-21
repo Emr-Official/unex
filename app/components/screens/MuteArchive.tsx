@@ -13,6 +13,7 @@ export function MuteArchive() {
     setArchived,
     setNeedSpaceHold,
     setScreen,
+    goHome,
   } = useUnex();
 
   return (
@@ -74,7 +75,13 @@ export function MuteArchive() {
         <em>Delivered when they&apos;re ready.</em>
       </Sub>
 
-      <Btn variant="subtle" className="mt-auto" onClick={() => setScreen("home")}>
+      <Btn
+        variant="subtle"
+        onClick={() => setScreen("clearUnread")}
+      >
+        clear unread
+      </Btn>
+      <Btn variant="ghost" className="mt-auto" onClick={() => goHome()}>
         done
       </Btn>
     </div>

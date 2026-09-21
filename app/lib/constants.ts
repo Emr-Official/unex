@@ -1,4 +1,4 @@
-import type { HeartbreakStatus, Mood } from "./types";
+import type { HeartbreakStatus, Mood, LocaleCode } from "./types";
 
 export const STATUSES: HeartbreakStatus[] = [
   "Still sad",
@@ -33,10 +33,17 @@ export const TAP_DECK = [
   { label: "Ready when you are", category: "talk" },
   { label: "I'm sorry", category: "repair" },
   { label: "I miss you", category: "repair" },
+  // Overnight additions — message taps (Come over ≠ Come get me pin)
+  { label: "That was on me", category: "repair" },
+  { label: "I need you", category: "repair" },
+  { label: "Come over", category: "talk" },
+  { label: "Want you tonight", category: "talk" },
   { label: "Need space", category: "boundary" },
 ] as const;
 
 export const DAILY_TAP_LIMIT = 5;
+/** Simulated premium daily tap ceiling (client-only until real billing). */
+export const PREMIUM_TAP_LIMIT = 15;
 
 export const COPY = {
   muted: "Not reading right now",
@@ -47,3 +54,13 @@ export const COPY = {
   pending: "Waiting for them",
   declined: "Invite declined",
 } as const;
+
+export const LOCALES = [
+  { code: "en", label: "English", live: true },
+  { code: "es", label: "Español", live: false },
+  { code: "fr", label: "Français", live: false },
+  { code: "sw", label: "Kiswahili", live: false },
+  { code: "pt", label: "Português", live: false },
+] as const;
+
+export type { LocaleCode };

@@ -5,7 +5,7 @@ import { useUnex } from "@/lib/store";
 import { Avatar, Btn, Card, Chip, Pill, SectionTitle, Sub } from "../ui";
 
 export function ClearUnread() {
-  const { partnerName, unreadReceived, clearUnread, setScreen, lastSignal } =
+  const { partnerName, unreadReceived, clearUnread, setScreen, goHome, lastSignal } =
     useUnex();
   const name = partnerName || "them";
 
@@ -68,7 +68,7 @@ export function ClearUnread() {
         </Card>
       )}
 
-      <Btn variant="ghost" className="mt-auto" onClick={() => setScreen("home")}>
+      <Btn variant="ghost" className="mt-auto" onClick={() => goHome()}>
         back to home
       </Btn>
     </div>

@@ -5,7 +5,7 @@ import { useUnex } from "@/lib/store";
 import { Btn, Card, Chip, Eyebrow, SectionTitle, Sub } from "../ui";
 
 export function MyStatus() {
-  const { myStatus, myMood, setMyStatus, setMyMood, setScreen } = useUnex();
+  const { myStatus, myMood, setMyStatus, setMyMood, setScreen, goHome } = useUnex();
 
   return (
     <div className="flex flex-col flex-1 gap-3">
@@ -37,7 +37,7 @@ export function MyStatus() {
         </div>
       </Card>
 
-      <Btn className="mt-auto" onClick={() => setScreen("home")}>
+      <Btn className="mt-auto" onClick={() => goHome()}>
         save
       </Btn>
     </div>

@@ -18,7 +18,7 @@ export function TapConfirm() {
         <div className="text-[1.4rem] mb-1.5">💬</div>
         <div className="font-bold text-[1.1rem] text-[#f3f0f8]">{label}</div>
         <Sub className="mt-1.5">
-          to {name} · counts as 1 of 5 taps today ({tapsLeft} left)
+          to {name} · counts as 1 tap today ({tapsLeft} left)
         </Sub>
       </Card>
       <Btn onClick={sendTap} disabled={tapsLeft <= 0}>

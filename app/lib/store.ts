@@ -2,10 +2,11 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { COPY, DAILY_TAP_LIMIT } from "./constants";
+import { COPY, DAILY_TAP_LIMIT, PREMIUM_TAP_LIMIT } from "./constants";
 import { notifyTap } from "./notify";
 import type {
   HeartbreakStatus,
+  LocaleCode,
   Mood,
   PairRole,
   Screen,
@@ -59,6 +60,10 @@ interface UnexActions {
   selectConnection: (id: string) => void;
   showConnectionsList: () => void;
   syncActiveToConnections: () => void;
+  goHome: () => void;
+  setLocale: (locale: LocaleCode) => void;
+  ensureDailyTaps: () => void;
+  endPairFromRemote: () => void;
 }
 
 function upsertThreadList(
@@ -81,6 +86,7 @@ const initial: UnexState = {
   partnerStatus: "Open to talk",
   partnerMood: "Soft",
   tapsLeft: DAILY_TAP_LIMIT,
+  tapsDayKey: "",
   muted: false,
   archived: false,
   needSpaceHold: false,
@@ -98,10 +104,20 @@ const initial: UnexState = {
   seenTapIds: [],
   isPremium: false,
   myPhone: "",
+  locale: "en",
   connections: [],
   activeConnectionId: null,
   homeView: "pair",
 };
+
+
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function dailyLimit(isPremium: boolean): number {
+  return isPremium ? PREMIUM_TAP_LIMIT : DAILY_TAP_LIMIT;
+}
 
 export const useUnex = create<UnexState & UnexActions>()(
   persist(
@@ -151,6 +167,7 @@ export const useUnex = create<UnexState & UnexActions>()(
           screen: "home",
           homeView: "pair",
           tapsLeft: s.tapsLeft,
+        tapsDayKey: s.tapsDayKey,
         });
       },
 
@@ -179,7 +196,12 @@ export const useUnex = create<UnexState & UnexActions>()(
 
       sendInvite: async () => {
         const s = get();
-        const { myName, partnerName, showToast } = s;
+        const { myName, partnerName, showToast, isPremium, pairState } = s;
+        if (pairState === "paired" && !isPremium) {
+          showToast("free plan: one connection — see Premium");
+          set({ screen: "premium" });
+          return;
+        }
         let connections = s.connections;
         const snap = snapshotActive(s);
         if (snap) connections = upsertConnection(connections, snap);
@@ -362,6 +384,20 @@ export const useUnex = create<UnexState & UnexActions>()(
 
       acceptInvite: async (fromName, pairKey) => {
         const prev = get();
+        if (prev.pairState === "paired" && !prev.isPremium) {
+          prev.showToast("free plan: one connection — see Premium");
+          set({ screen: "premium" });
+          return;
+        }
+        if (!pairKey) {
+          prev.showToast("invite incomplete — ask them to resend the link");
+          return;
+        }
+        if (!prev.myPhone || prev.myPhone.length < 9) {
+          prev.showToast("add your WhatsApp number before accepting");
+          set({ screen: "login" });
+          return;
+        }
         let connections = prev.connections;
         const prevSnap = snapshotActive(prev);
         if (prevSnap) connections = upsertConnection(connections, prevSnap);
@@ -457,10 +493,10 @@ export const useUnex = create<UnexState & UnexActions>()(
       },
 
       sendTap: async () => {
+        get().ensureDailyTaps();
         const {
           pendingTap,
           tapsLeft,
-          needSpaceHold,
           muted,
           sentTaps,
           inviteCode,
@@ -468,6 +504,8 @@ export const useUnex = create<UnexState & UnexActions>()(
           pairDocId,
           showToast,
           thread,
+          partnerStatus,
+          partnerMood,
         } = get();
         if (!pendingTap || tapsLeft <= 0) return;
 
@@ -478,9 +516,11 @@ export const useUnex = create<UnexState & UnexActions>()(
           at: new Date().toISOString(),
         };
 
+        const partnerNeedsSpace =
+          partnerStatus === "Need space" || partnerMood === "Need space";
         let signal: string | null = null;
         let toast = "tap sent";
-        if (needSpaceHold) {
+        if (partnerNeedsSpace) {
           signal = COPY.needSpace;
           toast = COPY.needSpace;
         } else if (muted) {
@@ -509,7 +549,7 @@ export const useUnex = create<UnexState & UnexActions>()(
         });
 
         notifyTap({
-          body: needSpaceHold || muted ? toast : `Sent · ${pendingTap}`,
+          body: partnerNeedsSpace || muted ? toast : `Sent · ${pendingTap}`,
           tag: "unex-sent",
         });
 
@@ -779,8 +819,12 @@ export const useUnex = create<UnexState & UnexActions>()(
         const needSpaceHold = myStatus === "Need space";
         set({
           myStatus,
-          needSpaceHold: needSpaceHold || get().needSpaceHold,
-          lastSignal: needSpaceHold ? COPY.needSpace : get().lastSignal,
+          needSpaceHold,
+          lastSignal: needSpaceHold
+            ? COPY.needSpace
+            : get().lastSignal === COPY.needSpace
+              ? null
+              : get().lastSignal,
         });
         const { inviteCode, myRole, myMood, pairDocId } = get();
         if (inviteCode && myRole) {
@@ -815,7 +859,11 @@ export const useUnex = create<UnexState & UnexActions>()(
       setLastSignal: (lastSignal) => set({ lastSignal }),
 
       sendLivePin: async () => {
-        const { inviteCode, myRole, pairDocId, showToast, thread } = get();
+        const { inviteCode, myRole, pairDocId, showToast, thread, partnerStatus, partnerMood } = get();
+        if (partnerStatus === "Need space" || partnerMood === "Need space") {
+          showToast("they're in Need space — pin paused");
+          return;
+        }
         const label = "Come get me · live pin · 30 min";
         const at = new Date().toISOString();
         const item: ThreadItem = {
@@ -846,6 +894,20 @@ export const useUnex = create<UnexState & UnexActions>()(
       },
 
       endPair: () => {
+        const s = get();
+        const code = s.inviteCode;
+        const docId = s.pairDocId;
+        if (code) {
+          import("./pairSync")
+            .then(({ patchPair }) =>
+              patchPair(code, { ended: true }, docId).catch(() => {})
+            )
+            .catch(() => {});
+        }
+        get().endPairFromRemote();
+      },
+
+      endPairFromRemote: () => {
         const s = get();
         const id = s.activeConnectionId || s.inviteCode;
         const rest = id
@@ -890,10 +952,13 @@ export const useUnex = create<UnexState & UnexActions>()(
         let connections = s.connections;
         const snap = snapshotActive(s);
         if (snap) connections = upsertConnection(connections, snap);
+        const key = todayKey();
         set({
           isPremium: true,
           connections,
           homeView: connections.length > 0 ? "list" : "pair",
+          tapsLeft: PREMIUM_TAP_LIMIT,
+          tapsDayKey: key,
           toast: "premium unlocked (simulated)",
           screen: "home",
         });
@@ -902,10 +967,59 @@ export const useUnex = create<UnexState & UnexActions>()(
         }, 2400);
       },
 
+      ensureDailyTaps: () => {
+        const s = get();
+        const key = todayKey();
+        if (s.tapsDayKey === key) return;
+        set({
+          tapsDayKey: key,
+          tapsLeft: dailyLimit(s.isPremium),
+        });
+      },
+
+      goHome: () => {
+        const s = get();
+        if (s.pairState === "paired") {
+          if (s.isPremium) {
+            s.showConnectionsList();
+          } else {
+            set({ screen: "home", homeView: "pair" });
+          }
+          return;
+        }
+        if (s.pairState === "pending") {
+          set({ screen: "waiting" });
+          return;
+        }
+        if (s.pairState === "ended") {
+          set({ screen: "ended" });
+          return;
+        }
+        if (s.myName && s.myPhone) {
+          set({ screen: "invite" });
+          return;
+        }
+        if (s.myName) {
+          set({ screen: "login" });
+          return;
+        }
+        set({ screen: "splash" });
+      },
+
+      setLocale: (locale) => {
+        set({ locale });
+        if (locale !== "en") {
+          get().showToast("coming soon — English for now");
+        }
+      },
+
       reset: () => set({ ...initial }),
     }),
     {
       name: "unex-v8",
+      onRehydrateStorage: () => (state) => {
+        state?.ensureDailyTaps();
+      },
       partialize: (s) => ({
         myName: s.myName,
         partnerName: s.partnerName,
@@ -915,6 +1029,7 @@ export const useUnex = create<UnexState & UnexActions>()(
         partnerStatus: s.partnerStatus,
         partnerMood: s.partnerMood,
         tapsLeft: s.tapsLeft,
+        tapsDayKey: s.tapsDayKey,
         muted: s.muted,
         archived: s.archived,
         needSpaceHold: s.needSpaceHold,
@@ -929,6 +1044,7 @@ export const useUnex = create<UnexState & UnexActions>()(
         seenTapIds: s.seenTapIds,
         isPremium: s.isPremium,
         myPhone: s.myPhone,
+        locale: s.locale,
         connections: s.connections,
         activeConnectionId: s.activeConnectionId,
         homeView: s.isPremium ? "list" : "pair",
@@ -939,9 +1055,11 @@ export const useUnex = create<UnexState & UnexActions>()(
               ? "waiting"
               : s.pairState === "ended"
                 ? "ended"
-                : s.myName
+                : s.myName && s.myPhone
                   ? "invite"
-                  : "splash",
+                  : s.myName
+                    ? "login"
+                    : "splash",
       }),
     }
   )
