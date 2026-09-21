@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-unex-bg: #0c0b10;
+  --color-unex-surface: #16141c;
+  --color-unex-surface-2: #1e1b26;
+  --color-unex-purple: #c4b5fd;
+  --color-unex-pink: #f9a8d4;
+  --color-unex-text: #f3f0f8;
+  --color-unex-muted: #9b93a8;
+  --color-unex-dim: #6b6478;
+  --color-unex-danger: #fb7185;
+  --color-unex-ok: #a7f3d0;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0c0b10;
+  color: #f3f0f8;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* hide scrollbars in phone shell but keep scroll */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, 0.35) transparent;
+}
