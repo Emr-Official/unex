@@ -35,6 +35,14 @@ export function App() {
     setHydrated(true);
     const inv = parseInviteFromLocation();
     if (inv) setInbound({ from: inv.from, code: inv.code });
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("premium")) {
+        useUnex.getState().setScreen("premium");
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   if (!hydrated) {

@@ -1,0 +1,18 @@
+{
+  "name": "unex-pay-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "unex Premium payments via ioTec (Vercel serverless)",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vercel/node": "^3.2.0",
+    "typescript": "^5.5.0"
+  }
+}

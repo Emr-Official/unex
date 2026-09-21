@@ -959,7 +959,7 @@ export const useUnex = create<UnexState & UnexActions>()(
           homeView: connections.length > 0 ? "list" : "pair",
           tapsLeft: PREMIUM_TAP_LIMIT,
           tapsDayKey: key,
-          toast: "premium unlocked (simulated)",
+          toast: "premium unlocked",
           screen: "home",
         });
         setTimeout(() => {
